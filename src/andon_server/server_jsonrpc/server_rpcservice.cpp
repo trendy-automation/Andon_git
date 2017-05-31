@@ -291,13 +291,13 @@ QString ServerRpcService::StartSms(const QString &sms_params)
             queryText.replace(":CLIENT_IP",curClientIp().append("\'").prepend("\'"));
         //qDebug() << queryText;
         //return andonDb->query2json(queryText);
-        QString res;
-        QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
-                                  Q_RETURN_ARG(QString, res),
-                                  Q_ARG(QString, queryText));
-        return res;
-//        QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, queryText);
-//        return future.result();
+//        QString res;
+//        QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
+//                                  Q_RETURN_ARG(QString, res),
+//                                  Q_ARG(QString, queryText));
+//        return res;
+        QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, queryText);
+        return future.result();
     }
 //    }(queryText);
 }

@@ -440,12 +440,13 @@ QString DBWrapper::query2method(const QString & queryText, const QString &queryM
 }
 
 void DBWrapper::executeQuery(const QString &queryText, const QString &query_method,
-                             std::function<void(const QString&)> functor)
+                             std::function<void(QString)> functor)
 {
-    if(query_method.compare("query2json")==0)
-        functor(query2json(queryText));
-    if(query_method.compare("query2fulljson")==0)
-        functor(query2fulljson(queryText));
+    if(query_method.compare("json")==0)
+        return functor(query2json(queryText));
+    if(query_method.compare("fulljson")==0)
+        return functor(query2fulljson(queryText));
+    qDebug()<<"unknown query method:"<<query_method;
 }
 
 //void DBWrapper::executeQuery(const QString & queryText,

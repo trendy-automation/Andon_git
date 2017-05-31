@@ -141,13 +141,13 @@ int main(int argc, char *argv[])
     //TODO: server startup delay to DB
     BCSender * bcSender = new BCSender(UDP_INTERVAL,UDP_PORT,&a);
     bcSender->setObjectName("bcSender");
-    QObject::connect(andonDb, &DBWrapper::DBConnected, andonDb, [bcSender,andonDb](){
+//    QObject::connect(andonDb, &DBWrapper::DBConnected, andonDb, [bcSender,andonDb](){
         andonDb->executeQuery("SELECT IP_ADDRESS FROM TBL_STATIONS WHERE ENABLED='1'","json",
                               [bcSender](const QString &jsonClients){
                                   //QtConcurrent::run(bcSender,&BCSender::addClients,jsonClients);
                                bcSender->addClients(jsonClients);
         });
-    });
+//    });
     /*****************************************
      * Start ioStreamThread
      *****************************************/
@@ -169,8 +169,9 @@ int main(int argc, char *argv[])
     WebuiThread *WThread = new WebuiThread;
     WThread->setObjectName("WebuiThread");
     WThread->start();
-    cfListenPort<WebuiThread>(WThread,WUI_PORT,3000,1000);
-
+    //QTimer::singleShot(0,WThread,[WThread](){
+    cfListenPort<WebuiThread>(WThread,(quint16)WUI_PORT,3000,1000);
+    //});
     //    qDebug()<<"Start setup the channel";
     QWebChannel channel(&a);
     QObject::connect(&clientWrapper, &WebSocketClientWrapper::clientConnected,
@@ -304,13 +305,13 @@ int main(int argc, char *argv[])
     });
 
 
-//    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, QString("SELECT AUX_PROPERTIES_LIST "
-//                                                                                "FROM TBL_TCPDEVICES "
-//                                                                                "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'"));
-    QString sqlqueryres /*= future.result()*/;
-                            /*andonDb->query2json("SELECT AUX_PROPERTIES_LIST "
+    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, QString("SELECT AUX_PROPERTIES_LIST "
+                                                                                "FROM TBL_TCPDEVICES "
+                                                                                "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'"));
+    QString sqlqueryres = future.result();
+                            andonDb->query2json("SELECT AUX_PROPERTIES_LIST "
                                               "FROM TBL_TCPDEVICES "
-                                              "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'");*/
+                                              "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'");
     QJsonDocument jdocURL;
     if (!sqlqueryres.isEmpty()){
         jdocURL= QJsonDocument::fromJson(sqlqueryres.toUtf8());
@@ -428,8 +429,8 @@ int main(int argc, char *argv[])
 //                         QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_export.xlsx")
 //                         //.arg(QDate::currentDate().toString("MMMM_yyyy"))
 //                         ,"AutoDecl_aria");
-//        excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
-//                         "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
+        excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
+                         "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
 //    });
 
     qDebug()<<"main finish";

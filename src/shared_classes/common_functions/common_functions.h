@@ -35,17 +35,16 @@ void cfSetProperties(T * obj,const QVariantMap &objProperties)
             metaObj->property(i).write(obj,objProperties.value(metaObj->property(i).name()));
 }
 
-template<class/*typename*/ T>
-/*static*/ void cfListenPort(T * obj, quint16 port, int interval, int delay,std::function<void()>functor=[](){}) {
+template<class T>
+void cfListenPort(T * obj, quint16 port, int interval, int delay/*,std::function<void()>functor=[](){}*/) {
     QTimer *listenTimer = new QTimer;
-    //listenTimer->moveToThread(obj->thread());
-    QObject::connect(listenTimer,&QTimer::timeout,/*obj,*/[obj,port,listenTimer,interval,functor](){
+    QObject::connect(listenTimer,&QTimer::timeout,/*obj,*/[obj,port,listenTimer,interval/*,functor*/](){
         //qDebug()<<"currentThread()"<<QThread::currentThread();
         //QFuture<bool> Listening = QtConcurrent::run(/*(T*)*/obj, T::listen,QHostAddress::AnyIPv4, port);
 //        QFuture<bool> Listening = QtConcurrent::run(/*obj,*/[obj,port]()->bool{return obj->listen(QHostAddress::AnyIPv4, port);});
 //        if (Listening.result()) {
             if (obj->listen(QHostAddress::AnyIPv4, port)) {
-                functor();
+//                functor();
                 qDebug()<<QString("%1: %2 port opened").arg(obj->objectName()).arg(port);
                 listenTimer->stop();
                 listenTimer->deleteLater();
@@ -56,6 +55,7 @@ template<class/*typename*/ T>
     }/*, Qt::QueuedConnection*/);
     //QTimer::singleShot(0,obj,[listenTimer,delay](){listenTimer->start(delay);});
     listenTimer->start(delay);
+    //listenTimer->moveToThread(obj->thread());
 }
 
 template<class T>

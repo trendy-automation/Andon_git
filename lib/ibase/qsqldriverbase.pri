@@ -10,6 +10,7 @@ CONFIG += install_ok
 CONFIG += plugin
 
 target.path += $$[QT_INSTALL_PLUGINS]/sqldrivers
+
 INSTALLS += target
 
 }

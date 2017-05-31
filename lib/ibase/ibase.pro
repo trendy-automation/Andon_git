@@ -3,18 +3,19 @@ TEMPLATE = lib
 QT += sql
 win32:CONFIG += dll
 
-#win32{
-#    FIREBIRD = 'C:\Program Files\Firebird\Firebird_2_5'
-#} else {
-#    FIREBIRD = 'C:\Program Files (x86)\Firebird\Firebird_2_5'
-#}
-
-contains(QT_ARCH, i386){
-    FIREBIRD = 'C:\Program Files (x86)\Firebird\Firebird_2_5'
-} else {
+win32{
     FIREBIRD = 'C:\Program Files\Firebird\Firebird_2_5'
+} else {
+    FIREBIRD = 'C:\Program Files (x86)\Firebird\Firebird_2_5'
 }
+
+#contains(QT_ARCH, i386){
+#    FIREBIRD = 'C:\Program Files (x86)\Firebird\Firebird_2_5'
+#} else {
+#    FIREBIRD = 'C:\Program Files\Firebird\Firebird_2_5'
+#}
 #Add in PATH $${FIREBIRD}\bin and $${FIREBIRD}\lib
+#add user andon andon
 LIBS += -L$${FIREBIRD}\lib -lfbclient_ms
 
 INCLUDEPATH += $${FIREBIRD}\include

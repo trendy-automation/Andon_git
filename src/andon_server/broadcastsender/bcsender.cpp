@@ -85,6 +85,7 @@ void BCSender::clearClients()
 
 void BCSender::addClients(const QString &jsonClients)
 {
+    qDebug()<<"BCSender started";
     for (auto row:QJsonDocument::fromJson(jsonClients.toUtf8()).array()){
         QJsonObject clientsObject=row.toObject();
         if(clientsObject.contains("IP_ADDRESS"))

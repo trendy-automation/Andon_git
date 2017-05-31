@@ -36,16 +36,16 @@ bool ExcelReport::queryText2Document(const QString & queryText, Document *xlsx,
         return false;
 
 
-    QString res;
-    QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QString, res),
-                              Q_ARG(QString, queryText));
+//    QString res;
+//    QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
+//                              Q_RETURN_ARG(QString, res),
+//                              Q_ARG(QString, queryText));
 
-//    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json,queryText);
+    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json,queryText);
     QTextCodec *codec = QTextCodec::codecForName("iso8859-1");
     int i=1;
     int field_count=1;
-    for (auto row:QJsonDocument::fromJson(/*future.result()*/res.toUtf8()).array()){
+    for (auto row:QJsonDocument::fromJson(future.result().toUtf8()).array()){
         int j=1;
         QJsonObject clientsObject=row.toObject();
         if(i==1){
