@@ -15,7 +15,7 @@ DEFINES += APP_OPTION_FORCE='\\"force\\"'
 DEFINES += APP_VER='\\"$${ANDNPRJ_VERSION}\\"'
 #______________SERVER_______________
 #_______________ upd _______________
-DEFINES += UDP_SRVRNAME='\\"Andon\040server\040ver.\0402.2\\"'
+DEFINES += UDP_SRVRNAME='\\"Andon\040server\040ver.\0402.3\\"'
 DEFINES += UDP_PORT=45455
 DEFINES += UDP_INTERVAL=3000
 

@@ -36,7 +36,7 @@ DEFINES += APP_NAME='\\"SERVER\\"'
 
 #QT      += script
 #QT      += scripttools
-QT      += concurrent
+#QT      += concurrent
 QT      += gui
 QT      += widgets
 QT      += qml

@@ -87,6 +87,8 @@ void UdpReceiver::processPendingDatagrams()
 //                    udpSocket->close();
 //                    socketopen=false;
                     isserverfound=true;
+                    ServerAddress = QHostAddress(ServerAddress.toIPv4Address());
+                    qDebug()<<"ServerAddress"<<ServerAddress.toString();
                     SvrHost = ServerAddress;
                     emit serverfound(ServerAddress);
 //                    QTimer * diagramtimer =new QTimer;

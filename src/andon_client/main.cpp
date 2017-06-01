@@ -84,7 +84,7 @@ void ServerFound(QHostAddress ServerAddress)
 
         /*        if (QApplication::applicationDirPath().toLower().contains("build"))
             return;
-        //QProcess process; //Anyway Roboot!
+        //QProcess process; //Anyway Reboot!
         //process.startDetached("shutdown.exe -r -f -t 0");
         IM->setWindowFlags(Qt::WindowStaysOnBottomHint);
         QMessageBox msgBox;
@@ -640,6 +640,7 @@ int main(int argc, char *argv[])
     if (!qApp->applicationDirPath().toLower().contains("build"))
         textCodec="cp866";
     MessageHandler msgHandler(textCodec);
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
     //TODO lymbda to procedures
     qmlRegisterType<InterfaceManager>("com.andon.interfacemanager", 1, 0, "InterfaceManager");
     qmlRegisterType<QTimer>("com.andon.timer", 1, 0, "QTimer");

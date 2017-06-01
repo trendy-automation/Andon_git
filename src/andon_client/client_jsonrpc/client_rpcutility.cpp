@@ -4,6 +4,7 @@
 #include <QEventLoop>
 #include <QApplication>
 #include <QTimer>
+#include <QNetworkProxyFactory>
 
 
 ClientRpcUtility::ClientRpcUtility(QObject *parent)
@@ -27,8 +28,10 @@ QJsonRpcServiceReply *ClientRpcUtility::ServerExecute(const QString &RemoteMetho
                                                       std::function<void(QVariant)> functor)
 {
 //    qDebug()<<RemoteMethodName<<InParameterList;
-    QTcpSocket *socket = new QTcpSocket;//(this);
-    socket->connectToHost(serveraddress.toString(), JSONRPC_SERVER_PORT);
+    QTcpSocket *socket = new QTcpSocket();//(this);
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
+    socket->connectToHost(serveraddress/*.toString()*/, JSONRPC_SERVER_PORT/*,
+                          QAbstractSocket::ReadWrite, QAbstractSocket::IPv4Protocol*/);
     if (!socket->waitForConnected()) {
         //qDebug() << "could not connect to server: " << socket->errorString();
         emit error(QString("Error ""%1"" trying execute %2").arg(socket->errorString()).arg(RemoteMethodName));

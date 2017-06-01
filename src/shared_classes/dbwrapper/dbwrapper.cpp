@@ -1,5 +1,5 @@
 #include "dbwrapper.h"
-#include <QtConcurrent>
+//#include <QtConcurrent>
 #include <QMetaObject>
 
 DBWrapper::DBWrapper(QObject *parent) : QObject(parent)
@@ -81,7 +81,7 @@ bool DBWrapper::ConnectDB(const QString &DB_Path,const QString &DB_Name)
     //        ibpp->Connect();
     if(!QSqlDatabase::contains(DB_Name)){
         DB = QSqlDatabase::addDatabase(QLatin1String("QIBASE"),DB_Name); //QFIREBIRD
-        DB.setDatabaseName(DB_Path+QDir::separator()+DB_Name);
+        DB.setDatabaseName(DB_Path+/*QDir::separator()*/"/"+DB_Name);
         DB.setUserName("andon");
         DB.setPassword("andon");
     }
@@ -117,7 +117,7 @@ bool DBWrapper::ConnectDB(const QString &DB_Path,const QString &DB_Name)
         //QTimer::singleShot(0,this,[cleanTimer](){cleanTimer->start();});
         //QtConcurrent::run(cleanTimer,&QTimer::start,DB_CASH_CLAEN_INTERVAL);//*/
         cleanTimer->start();
-        cleanTimer->moveToThread(this->thread());//*/
+        //cleanTimer->moveToThread(this->thread());//*/
         emit DBConnected();
         //qDebug() << "DB connection OK";
         return true;

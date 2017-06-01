@@ -34,6 +34,8 @@
 
 #include "excel_report.h"
 
+//#include <QNetworkProxyFactory>
+
 int main(int argc, char *argv[])
 {
     //qRegisterMetaType<QJsonRpcTcpServer*>("QJsonRpcTcpServer");
@@ -60,6 +62,8 @@ int main(int argc, char *argv[])
      * Start MessageHandler
      *****************************************/
     MessageHandler msgHandler;//("cp866")
+
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
     /*****************************************
      * Start Single Application
      *****************************************/
@@ -305,10 +309,10 @@ int main(int argc, char *argv[])
     });
 
 
-    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, QString("SELECT AUX_PROPERTIES_LIST "
-                                                                                "FROM TBL_TCPDEVICES "
-                                                                                "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'"));
-    QString sqlqueryres = future.result();
+//    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, QString("SELECT AUX_PROPERTIES_LIST "
+//                                                                                "FROM TBL_TCPDEVICES "
+//                                                                                "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'"));
+    QString sqlqueryres = /*future.result();*/
                             andonDb->query2json("SELECT AUX_PROPERTIES_LIST "
                                               "FROM TBL_TCPDEVICES "
                                               "WHERE DEVICE_TYPE='SMS Server' AND DEVICE_TYPE='SMS Server'");
@@ -429,8 +433,8 @@ int main(int argc, char *argv[])
 //                         QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_export.xlsx")
 //                         //.arg(QDate::currentDate().toString("MMMM_yyyy"))
 //                         ,"AutoDecl_aria");
-        excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
-                         "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
+//        excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
+//                         "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
 //    });
 
     qDebug()<<"main finish";

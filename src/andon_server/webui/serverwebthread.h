@@ -113,43 +113,23 @@ public slots:
 //        QTcpSocket tmpSock;
 //        if(tmpSock.bind(port)) {
 //            tmpSock.close();
-            qDebug()<<1;
             std::string buf = "";
             char s_http_port[5];
             buf += itoa(port, s_http_port, 10);
-            qDebug()<<2;
             //    mg_set_option(mgserver, "listening_port", port_char);
-
-
             if(!mgr)
                 mgr = new mg_mgr;
-            qDebug()<<3;
             mg_mgr_init(mgr, NULL);
-            qDebug()<<4;
             nc = mg_bind(mgr, s_http_port, ev_handler);
-            qDebug()<<5;
             if (nc == NULL)
                 return false;
-            qDebug()<<6;
             // Set up HTTP server parameters
             mg_set_protocol_http_websocket(nc);
-            qDebug()<<7;
             return true;
 //        }
 //        else
 //            return false;
     }
-
-    /*    void updateWebuiData(const QString &sql_query, const QString &jsontext)
-    {
-        webuiPages.insert(sql_query,{jsontext,QTime::currentTime()});
-        qDebug() << "sql_query"<<sql_query;
-//         << webuiPages.count()<<update_count;
-        emit sendText(sql_query, jsontext);
-//if (update_count<932838457459459)
-//    update_count++;
-    }
-  */
 
     void receiveText(const QString &query, const QString &query_method)
     {

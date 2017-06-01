@@ -11,7 +11,7 @@
 #include <QApplication>
 #include <QThread>
 #include <QHostAddress>
-#include <QtConcurrent>
+//#include <QtConcurrent>
 //#include "qjsonrpctcpserver.h"
 //#include "watchdog.h"
 

@@ -98,17 +98,22 @@ static void appCreateObjects(QVariant resp)
 static void mcbLoadTcpDevices(const QVariant &resp)
 {
 //    qDebug()<<resp;
-    QJsonArray jsonArray = QJsonDocument::fromJson(resp.toString().toUtf8()).array();
-//    for (auto value = jsonArray.begin(); value != jsonArray.end(); value++) {
+    //QJsonArray jsonArray = QJsonDocument::fromJson(resp.toString().toUtf8()).array();
+    static const QByteArray fldClsName("CLASS_NAME");
+    for (auto value:QJsonArray(QJsonDocument::fromJson(resp.toString().toUtf8()).array())) {
 //    for (auto &value:jsonArray) { // not work
-    foreach (const QJsonValue &value, jsonArray) {
+//    foreach (const QJsonValue &value, jsonArray) {
         QJsonObject jsonObject=value.toObject();
-        static const QByteArray fldClsName("CLASS_NAME");
         if (jsonObject.contains(fldClsName)) {
             QString className(jsonObject[fldClsName].toString());
+            if(className.isEmpty()){
+                if (jsonObject.contains("DEVICE_NAME"))
+                    qDebug() << QString("Type name of %1 is empty").arg(jsonObject["DEVICE_NAME"].toString());
+                continue;
+            }
             int id = QMetaType::type(className.toLatin1());
             if (id != 0) {
-                const QMetaObject *meta_object = QMetaType::metaObjectForType(id); // returns NOT NULL
+                const QMetaObject *meta_object = QMetaType::metaObjectForType(id);
                 QObject* tcpDevice= meta_object->newInstance(Q_ARG(QObject*, qApp));
                 cfSetProperties(tcpDevice,jsonObject.toVariantMap());
                 qDebug() << QString("%1 %2 created")

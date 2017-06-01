@@ -279,9 +279,8 @@ QString ServerRpcService::StartSms(const QString &sms_params)
     return QString();
 }
 
-/*std::function<QString (QString)>*/ QString ServerRpcService::SQLQuery2Json(QString queryText)
+QString ServerRpcService::SQLQuery2Json(QString queryText)
 {
-//    return [=](QString queryText)->QString{
     // qDebug() << queryText;
     if (queryText.isEmpty()) {
         qDebug() << "SQL query empty in SQLQuery2Json";
@@ -290,16 +289,15 @@ QString ServerRpcService::StartSms(const QString &sms_params)
         if (queryText.contains(":CLIENT_IP"))
             queryText.replace(":CLIENT_IP",curClientIp().append("\'").prepend("\'"));
         //qDebug() << queryText;
-        //return andonDb->query2json(queryText);
+        return andonDb->query2json(queryText);
 //        QString res;
 //        QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
 //                                  Q_RETURN_ARG(QString, res),
 //                                  Q_ARG(QString, queryText));
 //        return res;
-        QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, queryText);
-        return future.result();
+//        QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json, queryText);
+//        return future.result();
     }
-//    }(queryText);
 }
 
 void ServerRpcService::executeProc(const QString & queryText)

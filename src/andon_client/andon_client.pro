@@ -25,7 +25,7 @@ DEFINES += APP_NAME='\\"CLIENT\\"'
 
 CONFIG  += console
 
-QT      += concurrent
+#QT      += concurrent
 QT      += serialport
 QT      += widgets
 QT      += qml
