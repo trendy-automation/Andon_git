@@ -34,37 +34,24 @@ bool ExcelReport::queryText2Document(const QString & queryText, Document *xlsx,
     DBWrapper *andonDb =cfGetObject<DBWrapper>("andonDb");
     if(!andonDb)
         return false;
-
-
-//    QString res;
-//    QMetaObject::invokeMethod(andonDb, "query2json", Qt::BlockingQueuedConnection,
-//                              Q_RETURN_ARG(QString, res),
-//                              Q_ARG(QString, queryText));
-
 //    QFuture<QString> future = QtConcurrent::run(andonDb,&DBWrapper::query2json,queryText);
     QTextCodec *codec = QTextCodec::codecForName("iso8859-1");
-    QString sqlResult = andonDb->query2json(queryText);
-    int i=1;
-    int field_count=1;
-    for (auto row:QJsonDocument::fromJson(sqlResult.toUtf8()).array()){
-        int j=1;
-        QJsonObject clientsObject=row.toObject();
-        if(i==1){
-            field_count=clientsObject.keys().count();
-            for(auto field_name:clientsObject.keys()){
-                xlsx->write(i,j,QString(codec->fromUnicode(field_name)));
-                j++;
-            }
-            j=1;
-        }
-        for(auto val:clientsObject){
-            xlsx->write(i,j,val.toVariant());
-            j++;
-        }
+    QString sqlResult = andonDb->query2jsonfield(queryText);
+    QJsonArray resArray =  QJsonDocument::fromJson(sqlResult.toUtf8()).array();
+    QStringList fields;
+    if(resArray.count()>0){
+        fields = resArray.at(0).toVariant().toStringList();
+        for(int j=1;j<fields.count()+1;j++)
+            xlsx->write(1,j,QString(codec->fromUnicode(fields.at(j-1))));
+    }
+    for(int i=1;i<resArray.count();i++){
+        QJsonObject clientsObject=resArray.at(i).toObject();
+        for(int j=1;j<fields.count()+1;j++)
+            xlsx->write(i+1,j,clientsObject.value(fields.at(j-1)).toVariant());
     }
     if(!ariaName.isEmpty())
         if(!xlsx->defineName(ariaName,QString("='%1'!$A$1:$%2$%3").arg(sheetName)
-                         .arg(QChar(QChar('A').unicode()+field_count-1)).arg(i)))
+                         .arg(QChar(QChar('A').unicode()+fields.count()-1)).arg(resArray.count())))
            qDebug()<<"Can not define aria name"<<ariaName;
     return true;
 }

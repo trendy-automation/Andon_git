@@ -44,7 +44,7 @@ QJsonRpcServiceReply *ClientRpcUtility::ServerExecute(const QString &RemoteMetho
         arg[i]=i<inParameterList.count()?inParameterList.at(i):QVariant();
     QJsonRpcServiceReply *reply = m_client->invokeRemoteMethod(QString(JSONRPC_SERVER_SERVICENAME).append(".").append(RemoteMethodName),
                                                                arg[0],arg[1],arg[2],arg[3],arg[4],arg[5],arg[6],arg[7],arg[8],arg[9]);
-    if(functor)
+    if(functor){
         QObject::connect(reply, &QJsonRpcServiceReply::finished, [reply,functor] () {
             QVariant result = reply->response().result().toVariant();
             if (result.isValid())
@@ -53,6 +53,10 @@ QJsonRpcServiceReply *ClientRpcUtility::ServerExecute(const QString &RemoteMetho
                 qDebug() << "invalid response received!!!"
                          << reply->response().errorMessage();
         });
+        QObject::connect(reply, &QJsonRpcServiceReply::destroyed, [RemoteMethodName,inParameterList] () {
+                qDebug() << "reply destroyed" << RemoteMethodName << inParameterList;
+        });
+    }
     return reply;
 }
 
@@ -131,7 +135,10 @@ QVariant ClientRpcUtility::query(const QString &queryText)
     if (reply){
         QObject::connect(reply, &QJsonRpcServiceReply::finished, &replyWaitLoop, &QEventLoop::quit);
         //TODO signal jsonrpc timeout
-        QTimer::singleShot(JSONRPC_REPLY_TIMEOUT, &replyWaitLoop, &QEventLoop::quit);
+        QTimer::singleShot(JSONRPC_REPLY_TIMEOUT, [&replyWaitLoop,queryText](){
+            qDebug() << "JSONRPC_REPLY_TIMEOUT for query" << queryText;
+            replyWaitLoop.quit();
+        });
         replyWaitLoop.exec();
         if (!reply->response().result().toVariant().isValid())
             qDebug() << "invalid response received!!!"

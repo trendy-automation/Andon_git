@@ -71,8 +71,8 @@ public:
         myMessageHandler(QtDebugMsg,QMessageLogContext(),
             "\r\n_________________________________________________________");
         myMessageHandler(QtDebugMsg,QMessageLogContext(),
-                         QString("Application %1 build %2 runing").arg(DEBUG_NAME)
-                          .arg(QFileInfo(qApp->applicationFilePath()).created().toString("ddMMyy:hh.mm")));
+                         QString("Application %1 ver.%2 build %3 runing").arg(DEBUG_NAME).arg(APP_VER)
+                          .arg(QFileInfo(qApp->applicationFilePath()).created().toString("dd.MM.yy hh:mm")));
     }
 
     ~MessageHandler(){

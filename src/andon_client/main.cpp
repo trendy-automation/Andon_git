@@ -614,8 +614,6 @@ void ServerFound(QHostAddress ServerAddress)
 
     });
 
-
-
     qDebug()<<"ServerFound fineshed";
 }
 

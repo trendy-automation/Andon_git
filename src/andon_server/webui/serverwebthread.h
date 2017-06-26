@@ -28,9 +28,9 @@
 #include <functional>
 #include <QHostAddress>
 #include <QTcpSocket>
+#include <QUdpSocket>
 
 
-//#include <QtScript>
 #include <QJSEngine>
 #include <QApplication>
 
@@ -74,7 +74,8 @@ public:
         //qDebug() << "document_root" << document_root;
         //mgserver = mg_create_server(NULL, event_handler);
         //mg_set_option(mgserver, "document_root", document_root);
-        s_http_server_opts.document_root = document_root;  // Serve current directory
+        s_http_server_opts.document_root = "./webui2";//document_root;  // Serve current directory
+        //qDebug()<<"document_root"<<document_root;
         s_http_server_opts.enable_directory_listing = "yes";
 
         QObject::connect(&cleanTimer, &QTimer::timeout,[=](){
@@ -110,9 +111,9 @@ public slots:
     bool listen(QHostAddress address = QHostAddress::AnyIPv4, quint16 port = WUI_PORT)
     {
         //address=QHostAddress::Any;
-//        QTcpSocket tmpSock;
-//        if(tmpSock.bind(port)) {
-//            tmpSock.close();
+        QUdpSocket tmpSock;
+        if(tmpSock.bind(/*address,*/ port/*,QAbstractSocket::DontShareAddress*/)){
+            tmpSock.close();
             std::string buf = "";
             char s_http_port[5];
             buf += itoa(port, s_http_port, 10);
@@ -126,9 +127,9 @@ public slots:
             // Set up HTTP server parameters
             mg_set_protocol_http_websocket(nc);
             return true;
-//        }
-//        else
-//            return false;
+        }
+        else
+            return false;
     }
 
     void receiveText(const QString &query, const QString &query_method)
@@ -236,9 +237,11 @@ protected:
         for (;;) {
             if(mgr)
                 mg_mgr_poll(mgr, 1000);
+            else
+                QThread::msleep(10);
+//                qDebug()<<"!mgr";
         }
         mg_mgr_free(mgr);
-
     }
 };
 

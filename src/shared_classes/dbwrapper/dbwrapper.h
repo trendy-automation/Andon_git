@@ -46,6 +46,8 @@ public slots:
     QString query2method(const QString & queryText, const QString &queryMethod, int cashTime=0);
 //    QString query2fulljson(const QString & queryText, int cashTime);
 //    QString query2jsonstrlist(const QString & queryText, int cashTime);
+    QString query2jsonfield(const QString & queryText, int cashTime=0);
+    QString query2map(const QString & queryText, int cashTime=0);
     QString query2cash(const QString & queryText, int cashTime);
     QString query2fulljson(const QString & queryText);
     QString query2jsonstrlist(const QString & queryText);
@@ -62,16 +64,16 @@ public slots:
     bool getDbState();
 
 private:
-    queryStruct appendQuery(const QString &queryText, const QString &queryMethod, int cashTime);
-    bool queryIsCashed(queryStruct &queryItem);
-    bool queryExecute(queryStruct &queryItem);
+    queryStruct *appendQuery(const QString &queryText, const QString &queryMethod, int cashTime);
+    bool queryIsCashed(queryStruct *queryItem);
+    bool queryExecute(queryStruct *queryItem);
 
     queryStruct emptyQuery = {0, QString(), QString(), QString(), QString(), QString(), 0, QDateTime()};
     QString errorStr;
     QJSEngine *engine;
     //TODO pointers of queryStruct in queryMap
     //QMap<QString,*queryStruct> queryMap;
-    QMap<QString,queryStruct> queryMap;
+    QMap<QString,queryStruct*> queryMap;
     QMap<QString,std::function<QString(QSqlQuery*sqlQuery)>> packFunctionsMap;
     QString getQueryLastError(QSqlQuery *query);
     QString str2Json(const QString & name, const QString &val);

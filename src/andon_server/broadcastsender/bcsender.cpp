@@ -36,7 +36,7 @@ void BCSender::run()
 
 void BCSender::startBroadcasting()
 {
-//    qDebug() << "startBroadcasting";
+    qDebug() << "startBroadcasting" << UDP_SRVRNAME;
     timer->start();
 }
 

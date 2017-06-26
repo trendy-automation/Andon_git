@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     rpcServer->setObjectName("rpcServer");
     a.setProperty("rpcServer", qVariantFromValue((void *) rpcServer));
     rpcServer->addService(serverRpcService);
+    rpcServer->setMaxPendingConnections(50);
 //    QThread rpcServerThread;
 //    serverRpcService->moveToThread(&rpcServerThread);
 //    rpcServer->moveToThread(&rpcServerThread);
@@ -220,38 +221,38 @@ int main(int argc, char *argv[])
     qDebug()<<"reportTimer start"<<reportTimer->interval()/3600000.0<<"hours";
     QObject::connect(reportTimer,&QTimer::timeout, excelReport, [excelReport,reportTimer,msecsPerDay,andonDb](){
         //qDebug()<<"reportTimer timeout"<<"dayOfWeek"<<QDate::currentDate().dayOfWeek();
-        excelReport->queryText2File("SELECT * FROM REPORT_MONTH_DECLARATION", "AutoDecl",
-                         QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_%1.xlsx")
-                         .arg(QDate::currentDate().toString("MMMM_yyyy")),"AutoDecl_aria");
+//        excelReport->queryText2File("SELECT * FROM REPORT_MONTH_DECLARATION", "AutoDecl",
+//                         QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_%1.xlsx")
+//                         .arg(QDate::currentDate().toString("MMMM_yyyy")),"AutoDecl_aria");
         excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
                          "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
-        if(QDate::currentDate().daysInMonth()==QDate::currentDate().day())
+        /*if(QDate::currentDate().daysInMonth()==QDate::currentDate().day())
             excelReport->queryText2File(QString("SELECT * FROM REPORT_BREAKDOWNS('%1', '%2')")
                              .arg(QDate(QDate::currentDate().year(),QDate::currentDate().month(),1).toString("dd.MM.yyyy"))
                              .arg(QDate(QDate::currentDate().year(),(QDate::currentDate().month()+1)%12,1).toString("dd.MM.yyyy")),
                              QDate::currentDate().toString("Простои"),
                              QString("P:\\!Common Documents\\Andon_reports\\Простои за прошлый месяц.xlsx"),
-                             "brakedowns");
-        if(QDate::currentDate().dayOfWeek()<6)
-            QTimer::singleShot(0,andonDb,[andonDb,excelReport](){
-            andonDb->executeQuery("SELECT LIST(EMAIL) FROM TBL_STAFF WHERE EMAIL_REPORTING=1","json",
-                                  [excelReport](const QString &jsonUsers){
-                QJsonArray arr=QJsonDocument::fromJson(jsonUsers.toUtf8()).array();
-                if(!arr.isEmpty()){
-                    QJsonObject obj=arr.at(0).toObject();
-                    if(!obj.isEmpty()){
-                        QStringList rcpnts=obj.value(obj.keys().at(0)).toString().split(',');
-                        if(!rcpnts.isEmpty())
-                            QTimer::singleShot(1,excelReport,[excelReport,rcpnts](){
-                            excelReport->queryText2Email("SELECT * REPORT_BREAKDOWNS",
-                                                     QString("Простои производства %1").arg(QDate::currentDate().toString("ddd d MMMM")),rcpnts,"",
-                                                     QString("Отчёт по простоям %1").arg(QDate::currentDate().toString("ddd d MMMM")),
-                                                     QString("REPORT_BREAKDOWNS_%1.xlsx").arg(QDate::currentDate().toString("dd_MM_yyyy")));
-                            });
-                    }
-                }
-            });
-            });
+                             "brakedowns");*///
+//        if(QDate::currentDate().dayOfWeek()<6)
+//            QTimer::singleShot(0,andonDb,[andonDb,excelReport](){
+//            andonDb->executeQuery("SELECT LIST(EMAIL) FROM TBL_STAFF WHERE EMAIL_REPORTING=1","json",
+//                                  [excelReport](const QString &jsonUsers){
+//                QJsonArray arr=QJsonDocument::fromJson(jsonUsers.toUtf8()).array();
+//                if(!arr.isEmpty()){
+//                    QJsonObject obj=arr.at(0).toObject();
+//                    if(!obj.isEmpty()){
+//                        QStringList rcpnts=obj.value(obj.keys().at(0)).toString().split(',');
+//                        if(!rcpnts.isEmpty())
+//                            QTimer::singleShot(1,excelReport,[excelReport,rcpnts](){
+//                            excelReport->queryText2Email("SELECT * FROM REPORT_BREAKDOWNS",
+//                                                     QString("Простои производства %1").arg(QDate::currentDate().toString("ddd d MMMM")),rcpnts,"",
+//                                                     QString("Отчёт по простоям %1").arg(QDate::currentDate().toString("ddd d MMMM")),
+//                                                     QString("REPORT_BREAKDOWNS_%1.xlsx").arg(QDate::currentDate().toString("dd_MM_yyyy")));
+//                            });
+//                    }
+//                }
+//            });
+//            });
         QDateTime cdt = QDateTime::currentDateTime();
         reportTimer->start(cdt.msecsTo(QDateTime(cdt.addDays(1).date(),QTime(23,50))));
         //reportTimer->start(msecsPerDay-qMax(QTime(23,50).elapsed(),
@@ -428,7 +429,7 @@ int main(int argc, char *argv[])
 //                      QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_export.xlsx"),QString("AutoDecl_aria"));
 //    QtConcurrent::run(excelReport,&ExcelReport::queryText2File,QString("SELECT * FROM MNT_MOLD_REPORT"), QString("Andon_cycle_counter"),
 //                      QString("P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx"),QString("AutoDecl_aria"));
-//    QTimer::singleShot(10000,excelReport,[excelReport](){
+//    QTimer::singleShot(15000,excelReport,[excelReport](){
 //        excelReport->queryText2File("SELECT * FROM REPORT_MONTH_DECLARATION", "AutoDecl",
 //                         QString("P:\\!Common Documents\\AutomaticDeclarating\\AutoDecl_export.xlsx")
 //                         //.arg(QDate::currentDate().toString("MMMM_yyyy"))
@@ -436,7 +437,6 @@ int main(int argc, char *argv[])
 //        excelReport->queryText2File("SELECT * FROM MNT_MOLD_REPORT", "Andon_cycle_counter",
 //                         "P:\\Maintenance\\Обслуживание пресс-форм\\Andon_cycle_counter.xlsx");
 //    });
-
     qDebug()<<"main finish";
     return a.exec();
 }
