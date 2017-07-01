@@ -212,6 +212,7 @@ int main(int argc, char *argv[])
 //    QThread excelReportThread;
 //    excelReport->moveToThread(&excelReportThread);
 //    excelReportThread.start();
+    channel.registerObject(QStringLiteral("excelReport"), excelReport);
     a.setProperty("excelReport", qVariantFromValue((void *) excelReport));
     const int msecsPerDay = 24 * 60 * 60 * 1000;
     QTimer * reportTimer = new QTimer(QAbstractEventDispatcher::instance());

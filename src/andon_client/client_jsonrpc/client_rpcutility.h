@@ -49,6 +49,7 @@ public slots:
 signals:
     void error(QString errorString);
     void server_proc_reply(QString replyString);
+    void connectionRefusedError();
 //    void Query2Json(const QString &queryText, std::function<void(QVariant)> functor=0);
 private:
     QJsonRpcSocket *m_client;

@@ -136,8 +136,9 @@ KeTcpObject::KeTcpObject(QObject *parent) :
             ClientRpcUtility*serverRpc=qApp->findChild<ClientRpcUtility*>("serverRpc");
             if(serverRpc)
                 serverRpc->Query2Json(QString("SELECT DISTINCT DEVICE_NAME, "
-                                              "MOLD_NAME FROM PRODUCTION_PART_PRODUSED (%1,%2)")
-                                                     .arg(val.toInt()).arg(idDevice),
+                                              "MOLD_NAME FROM PRODUCTION_PART_PRODUSED (%1,%2,0,'%3')")
+                                                     .arg(val.toInt()).arg(idDevice)
+                                                     .arg(QDateTime::currentDateTime().toString("dd.MM.yy HH:mm:ss")),
                                                      static_cast<std::function<void(QVariant)>>(printResp));
         }
     });

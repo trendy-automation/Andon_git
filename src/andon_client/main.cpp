@@ -67,6 +67,26 @@ void ServerFound(QHostAddress ServerAddress)
     InterfaceManager* IM = new InterfaceManager;
     IM->InitVKeyboard();
     ClientRpcUtility *serverRpc = new ClientRpcUtility(qApp);
+    Watchdog *watchdog = cfGetObject<Watchdog>("watchdog");
+    if(watchdog)
+        QObject::connect(serverRpc,&ClientRpcUtility::connectionRefusedError,[watchdog](){
+            QString appPath(qApp->applicationFilePath());
+            QRegExp rx("/((\\w+\\s+)+\\w+)/");
+            if(rx.indexIn(appPath)!=-1){
+                QStringList list = rx.capturedTexts();
+                list.removeDuplicates();
+                for(QString &s:list){
+                    if(!s.endsWith(" ") && !s.endsWith("/")){
+                        appPath.replace(s,QString("\"%1\"").arg(s));
+                    }
+                }
+            }
+            appPath.replace("andon_server.exe","andon_client.exe");
+            qDebug() << "Force restart server application!"<<appPath;
+            QProcess *restartApp = new QProcess;
+            restartApp->startDetached(QString("%1 %2").arg(appPath).arg(APP_OPTION_FORCE));
+            watchdog->restartAppication("Connection refused by server");
+        });
     MLserverRpc=serverRpc;
     //    serverRpc->start();
     QObject::connect(serverRpc,&ClientRpcUtility::error,[=](QString errorString){
@@ -226,9 +246,10 @@ void ServerFound(QHostAddress ServerAddress)
                     });
                     QObject::connect(fileTimer,&QTimer::timeout,
                                      [serverRpc,ftp,buffer,fileTimer](){
+                        //fileTimer->stop();
                         QDateTime cdt = QDateTime::currentDateTime();
                         //int interval = qMin(FTP_INTERVAL+120,qMax(FTP_INTERVAL-120, cdt.msecsTo(QDateTime(cdt.addDays(cdt.time().hour()==23?1:0), QTime(cdt.time().hour()+1,58)))));
-                        QDateTime ndt = QDateTime::currentDateTime().addSecs(3600);
+                        QDateTime ndt = cdt.addSecs(3600);
                         int interval = cdt.msecsTo(QDateTime(ndt.date(),QTime(ndt.time().hour(),58)));
                         //qDebug() << "fileTimer->start(" << interval << ");";
                         fileTimer->start(interval);

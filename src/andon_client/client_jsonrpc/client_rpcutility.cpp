@@ -34,7 +34,9 @@ QJsonRpcServiceReply *ClientRpcUtility::ServerExecute(const QString &RemoteMetho
                           QAbstractSocket::ReadWrite, QAbstractSocket::IPv4Protocol*/);
     if (!socket->waitForConnected()) {
         //qDebug() << "could not connect to server: " << socket->errorString();
-        emit error(QString("Error ""%1"" trying execute %2").arg(socket->errorString()).arg(RemoteMethodName));
+        emit error(QString("Error \"%1\" trying execute %2").arg(socket->errorString()).arg(RemoteMethodName));
+        if(socket->error()==QAbstractSocket::ConnectionRefusedError)
+            emit connectionRefusedError();
         functor(QVariant());
         return 0;
     }

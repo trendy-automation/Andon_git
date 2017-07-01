@@ -213,6 +213,7 @@ bool DBWrapper::queryExecute (queryStruct * queryItem)
             }
         }
 */
+
     if(!DB.open())
         queryItem->s_error = DB.lastError().text();
     else{
@@ -223,7 +224,23 @@ bool DBWrapper::queryExecute (queryStruct * queryItem)
         //qDebug() << trans;
         queryItem->p_query = new QSqlQuery(DB);
         //DB.transaction();
-        if(queryItem->p_query->exec(queryItem->s_sql_query))
+        QTimer * queryTimeout = new QTimer;
+        queryTimeout->setSingleShot(true);
+        QObject::connect(queryTimeout,&QTimer::timeout,[this,queryItem](){
+            qDebug()<<"query timeout 1";
+            queryItem->s_error = "query timeout";
+            qDebug()<<"query timeout 2";
+            queryItem->p_query->clear();
+            qDebug()<<"query timeout 3";
+            queryItem->p_query->finish();
+            qDebug()<<"query timeout 4";
+            DB.close();
+            qDebug()<<"query timeout 5";
+        });
+        queryTimeout->start(30000);
+        if(queryItem->p_query->exec(queryItem->s_sql_query)){
+            queryTimeout->stop();
+            queryTimeout->deleteLater();
             if(!queryItem->p_query->lastError().isValid()){
                 //queryItem->p_query->finish();
                 //DB.commit();
@@ -234,6 +251,7 @@ bool DBWrapper::queryExecute (queryStruct * queryItem)
                 //queryItem->p_query->exec("COMMIT;");
                 return true;
             }
+        }
         //if (trans)
         //    qDebug() << QSqlDatabase::database().rollback();
         //DB.rollback();

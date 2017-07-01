@@ -52,9 +52,9 @@
 //
 
 #include <QtSql/qsqldriver.h>
-#include <C:/Program Files/Firebird/Firebird_2_5/include/ibase.h>
+//#include <C:/Program Files/Firebird/Firebird_2_5/include/ibase.h>
 //#include <C:/Program Files (x86)/Firebird/Firebird_2_5/include/ibase.h>
-//#include <ibase.h>
+#include <ibase.h>
 
 #ifdef QT_PLUGIN
 #define Q_EXPORT_SQLDRIVER_IBASE
