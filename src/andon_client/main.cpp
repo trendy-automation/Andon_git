@@ -81,7 +81,7 @@ void ServerFound(QHostAddress ServerAddress)
                     }
                 }
             }
-            appPath.replace("andon_server.exe","andon_client.exe");
+            appPath.replace("andon_client.exe","andon_server.exe");
             qDebug() << "Force restart server application!"<<appPath;
             QProcess *restartApp = new QProcess;
             restartApp->startDetached(QString("%1 %2").arg(appPath).arg(APP_OPTION_FORCE));
