@@ -11,12 +11,13 @@
 #include <QProcess>
 #include <QHostAddress>
 #include <QTimer>
+#include <QThread>
 
 class SingleAppRun: public QObject
 {
     Q_OBJECT
 public:
-    SingleAppRun(bool forseStart=false,QObject *parent=0)
+    SingleAppRun(bool forceStart=false,QObject *parent=0)
         : QObject(parent),
           shmem(new QSharedMemory(parent)),
           toQuit(false)
@@ -26,9 +27,10 @@ public:
         if(isRunning(QString("<ANDON %1 VER%2>").arg(APP_NAME).arg(APP_VER),
                      QString("<ANDON %1 VER%2 RUNNING>").arg(APP_NAME).arg(APP_VER), pid)) {
             qDebug() << QString("%1 is already running!").arg(APP_NAME);
-            if(forseStart){
+            if(forceStart){
                 qDebug() << QString("%1 forced restart!").arg(APP_NAME);
                 killProcess(pid);
+                QThread::sleep(3);
             }
             else {
                 int doTerminate=QMessageBox::question(new QWidget, QString("%1 is already running").arg(APP_NAME),
@@ -42,7 +44,6 @@ public:
                 case QMessageBox::No:
                 {
                     toQuit=true;
-
                     break;
                 }
                 default:
@@ -53,6 +54,7 @@ public:
             }
         }
     }
+
     bool isToQuit(){return toQuit;}
 
 private:
@@ -86,7 +88,7 @@ private:
         memcpy((char*)shmem->data(), (char *)new_pid.toLatin1().data(), qMax(shmem->size(), new_pid.size()));
         shmem->unlock();
         QString command = QString("taskkill /T /F /PID %1").arg(pid);
-        qDebug()<<command<<"pid"<<qApp->applicationPid();
+        qDebug()<<command<<". Application pid"<<qApp->applicationPid();
         QProcess * processKill = new QProcess;
         processKill->startDetached(command);
     }

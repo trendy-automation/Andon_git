@@ -28,6 +28,7 @@
 //#include "qwebchannel.h"
 //#include <QtWebSockets/QWebSocketServer>
 #include <QtQml>
+#include <QDateTime>
 
 //#include "math.h"
 //using namespace std;
@@ -67,25 +68,36 @@ void ServerFound(QHostAddress ServerAddress)
     InterfaceManager* IM = new InterfaceManager;
     IM->InitVKeyboard();
     ClientRpcUtility *serverRpc = new ClientRpcUtility(qApp);
+    serverRpc->setProperty("LAST_SERVER_RESTART",QDateTime::currentDateTime());
     Watchdog *watchdog = cfGetObject<Watchdog>("watchdog");
     if(watchdog)
-        QObject::connect(serverRpc,&ClientRpcUtility::connectionRefusedError,[watchdog](){
-            QString appPath(qApp->applicationFilePath());
-            QRegExp rx("/((\\w+\\s+)+\\w+)/");
-            if(rx.indexIn(appPath)!=-1){
-                QStringList list = rx.capturedTexts();
-                list.removeDuplicates();
-                for(QString &s:list){
-                    if(!s.endsWith(" ") && !s.endsWith("/")){
-                        appPath.replace(s,QString("\"%1\"").arg(s));
-                    }
-                }
+        QObject::connect(serverRpc,&ClientRpcUtility::connectionRefusedError,[watchdog,serverRpc](){
+            if(QDateTime(serverRpc->property("LAST_SERVER_RESTART").toDateTime()).secsTo(QDateTime::currentDateTime())<60){
+            //serverRpc->disconnect();
+            QString clientPath(qApp->applicationFilePath()/*.append("\"").prepend("\"")*/);
+//            QRegExp rx("/((\\w+\\s+)+\\w+)/");
+//            if(rx.indexIn(clientPath)!=-1){
+//                QStringList list = rx.capturedTexts();
+//                list.removeDuplicates();
+//                for(QString &s:list){
+//                    if(!s.endsWith(" ") && !s.endsWith("/")){
+//                        clientPath.replace(s,QString("\"%1\"").arg(s));
+//                    }
+//                }
+//            }
+
+            QString serverPath(clientPath);
+            serverPath.replace("andon_client.exe","andon_server.exe");
+            qDebug() << "Force restart server application!"<<serverPath<<"force";
+            QProcess::startDetached("cmd.exe",QStringList()<<"/C"<<"start"<<serverPath<<APP_OPTION_FORCE);
+//            qDebug() << "Force restart client application!"<<clientPath;
+//            QProcess * restartClientApp = new QProcess(qApp);
+//            restartClientApp->startDetached("cmd.exe /C start",QStringList()<<clientPath<<APP_OPTION_FORCE);
+            //watchdog->restartAppication("Connection refused by server",true);
+            //qApp->quit();
+            serverRpc->setProperty("LAST_SERVER_RESTART",QDateTime::currentDateTime());
             }
-            appPath.replace("andon_client.exe","andon_server.exe");
-            qDebug() << "Force restart server application!"<<appPath;
-            QProcess *restartApp = new QProcess;
-            restartApp->startDetached(QString("%1 %2").arg(appPath).arg(APP_OPTION_FORCE));
-            watchdog->restartAppication("Connection refused by server");
+
         });
     MLserverRpc=serverRpc;
     //    serverRpc->start();

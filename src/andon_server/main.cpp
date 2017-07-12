@@ -128,6 +128,14 @@ int main(int argc, char *argv[])
 //                                ,rpcServer,JSONRPC_SERVER_PORT,3000,700);
     //QTimer::singleShot(0,rpcServer,[rpcServer](){
         cfListenPort<QJsonRpcTcpServer>(rpcServer,JSONRPC_SERVER_PORT,3000,700);
+        QTimer *listenTimer = new QTimer;
+        QObject::connect(listenTimer,&QTimer::timeout,[rpcServer](){
+            if (!rpcServer->isListening())
+                if(!rpcServer->property("opening").toBool())
+                    cfListenPort<QJsonRpcTcpServer>(rpcServer,JSONRPC_SERVER_PORT,3000,0);
+        });
+        listenTimer->start(3600000); //each 1 hour
+
     //});
 //    QtConcurrent::run(QThreadPool::globalInstance(),
 //                      static_cast<void(QJsonRpcTcpServer*, short unsigned int, int, int,std::function<void>)>(cfListenPort),

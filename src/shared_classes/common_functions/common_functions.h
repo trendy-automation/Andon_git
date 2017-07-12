@@ -37,17 +37,22 @@ void cfSetProperties(T * obj,const QVariantMap &objProperties)
 
 template<class T>
 void cfListenPort(T * obj, quint16 port, int interval, int delay/*,std::function<void()>functor=[](){}*/) {
+    obj->setProperty("opening",true);
     QTimer *listenTimer = new QTimer;
     QObject::connect(listenTimer,&QTimer::timeout,/*obj,*/[obj,port,listenTimer,interval/*,functor*/](){
         //qDebug()<<"currentThread()"<<QThread::currentThread();
         //QFuture<bool> Listening = QtConcurrent::run(/*(T*)*/obj, T::listen,QHostAddress::AnyIPv4, port);
 //        QFuture<bool> Listening = QtConcurrent::run(/*obj,*/[obj,port]()->bool{return obj->listen(QHostAddress::AnyIPv4, port);});
 //        if (Listening.result()) {
-            if (obj->listen(QHostAddress::AnyIPv4, port)) {
+            if (obj->listen(QHostAddress::Any, port)) { //AnyIPv4
 //                functor();
-                qDebug()<<QString("%1: %2 port opened").arg(obj->objectName()).arg(port);
+                //if(!obj.property("opening").toBool())
+                    qDebug()<<QString("%1: %2 port opened").arg(obj->objectName()).arg(port);
+                //obj.setProperty("opened",true);
+                //listenTimer->start(3600000); // each 1 hour
                 listenTimer->stop();
                 listenTimer->deleteLater();
+                obj->setProperty("opening",false);
             } else {
                 qDebug()<<QString("%1: Failed to open port %2").arg(obj->objectName()).arg(port);
                 listenTimer->start(interval);

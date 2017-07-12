@@ -51,7 +51,7 @@ public slots:
         //qDebug() << "watchdog start";
         QProcess *watchdogProcess = new QProcess/*(qApp)*/;
         watchdogProcess->setProcessChannelMode(QProcess::QProcess::ForwardedChannels);
-        watchdogProcess->start(qApp->applicationFilePath(),QStringList(APP_OPTION_WATHCDOG));
+        watchdogProcess->start(qApp->applicationFilePath(),QStringList(APP_OPTION_WATHCDOG));//startdeatach?
     }
     void restartAppication(const QString &reason="", bool cmdFlag=false)
     {
