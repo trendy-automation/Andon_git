@@ -3,21 +3,17 @@
 #include "message_handler.h"
 #include "qttelnet.h"
 #include "single_apprun.h"
-#include "watchdog.h"
+//#include "watchdog.h"
 #include <QApplication>
 
-void RunPLC_connection()
+void StartApp()
 {
     qDebug()<<"RunPLC_connection start";
 
     //########### Step 1.0 ############
     QtTelnet *telnetClient = new QtTelnet;
 
-
-    //########### Step 1.1 ############
-
-
-    //########### Step 1.2 TELNET_SAP ############
+    //########### Step 2 TELNET_SAP ############
     qDebug() << "new TELNET_SAP";
     //Mitsu_FC1	22	10.224.29.60	SAPcoRPC	Faurecia01*
     telnetClient->setObjectName("Mitsu_FC1");
@@ -34,7 +30,7 @@ void RunPLC_connection()
             qDebug() << "kanban error" << error <<message;
     });
 
-    //########### Step 1.3 PLC_PARTNER connect ############
+    //########### Step 3 PLC_PARTNER connect ############
     //192.168.0.11
     //{"LocalAddress":"192.168.0.10", "LocTsap":"1002", "RemTsap":"2002",
     //"users":["RUTYABC018", "initial","RUTYABC019", "initial"]}
@@ -53,29 +49,31 @@ void RunPLC_connection()
             telnetClient->kanbanDeclare(0, kanbanNumber,user,pass,idDevice);
         });
     QObject::connect(telnetClient, &QtTelnet::kanbanFinished, plcPartner, &Plc_station::resDeclKanban);
-    qDebug() << "plcPartner status" << plcPartner->getStatus();
-
-qDebug()<<"RunPLC_connection fineshed";
+    QStringList plcStatusList;
+    plcStatusList<<"stopped"<<"running and active connecting"<<"running and waiting for a connection"
+                 <<"running and connected : linked"<<"sending data"<<"receiving data"
+                 <<"error starting passive server";
+    qDebug() << "plcPartner status:"<<plcStatusList.at(plcPartner->getStatus());
+qDebug()<<"RunPLC_connection finished";
 }
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QStringList args = a.arguments();
-    Watchdog *watchdog = new Watchdog(&a);
-    watchdog->setObjectName("watchdog");
-    if(args.contains(APP_OPTION_WATHCDOG)){
-        if(!watchdog->listen(JSONRPC_CLIENT_WATCHDOG_PORT,QString(JSONRPC_WATCHDOG_SERVICENAME).append(".isAlive")))
-            qDebug() << "Watchdog application cannot run!";
-        return a.exec();
-    }
+//    Watchdog *watchdog = new Watchdog(&a);
+//    watchdog->setObjectName("watchdog");
+//    if(args.contains(APP_OPTION_WATHCDOG)){
+//        if(!watchdog->listen(JSONRPC_CLIENT_WATCHDOG_PORT,QString(JSONRPC_WATCHDOG_SERVICENAME).append(".isAlive")))
+//            qDebug() << "Watchdog application cannot run!";
+//        return a.exec();
+//    }
     QByteArray textCodec="cp1251";
     if (!qApp->applicationDirPath().toLower().contains("build"))
         textCodec="cp866";
     /*****************************************
      * Start MessageHandler
      *****************************************/
-    qDebug()<<"Start MessageHandler";
     MessageHandler msgHandler(textCodec);
     /*****************************************
      * Start SingleAppRun
@@ -86,11 +84,11 @@ int main(int argc, char *argv[])
         a.quit();
         return 0;
     }
-    RunPLC_connection();
-    /*****************************************
-     * Start Watchdog
-     *****************************************/
-    qDebug()<<"Start Watchdog";
-    watchdog->startRpcServer(JSONRPC_CLIENT_WATCHDOG_PORT);
+    StartApp();
+//    /*****************************************
+//     * Start Watchdog
+//     *****************************************/
+//    qDebug()<<"Start Watchdog";
+//    watchdog->startRpcServer(JSONRPC_CLIENT_WATCHDOG_PORT);
     return a.exec();
 }

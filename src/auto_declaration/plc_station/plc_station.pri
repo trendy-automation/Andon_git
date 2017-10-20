@@ -1,8 +1,5 @@
 #QT += core network
-include($${ANDNPRJ_LIBPATH}/snap7/snap7.pri)
-
-#LIBS        += -lsnap7
-#LIBS += -L$${ANDNPRJ_LIBPATH}/snap7 -lsnap7
+include(../../../lib/snap7/snap7.pri)
 
 INCLUDEPATH += $$PWD
 
