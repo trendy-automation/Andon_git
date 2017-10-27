@@ -1154,8 +1154,17 @@ void QtTelnetPrivate::socketError(QAbstractSocket::SocketError error)
     \sa connectToHost()
 */
 QtTelnet::QtTelnet(QObject *parent)
-    : QThread(parent), d(new QtTelnetPrivate(this))
+    : /*QThread*/QObject(parent), d(new QtTelnetPrivate(this))
 {
+//    delayTaskTimer.setParent(0);
+//    taskTimer.setParent(0);
+//    delayTaskTimer.moveToThread(this->thread());
+//    taskTimer.moveToThread(this->thread());
+
+    QObject::connect(this,&QtTelnet::taskStarted, &taskTimer,
+                     static_cast<void (QTimer::*)()>(&QTimer::start), Qt::QueuedConnection);
+    QObject::connect(this,&QtTelnet::taskRestarted, &delayTaskTimer,
+                     static_cast<void (QTimer::*)(int)>(&QTimer::start), Qt::QueuedConnection);
 
 }
 
@@ -1170,7 +1179,8 @@ QtTelnet::~QtTelnet()
     delete d;
 }
 
-void QtTelnet::run(void)
+//void QtTelnet::run(void)
+void QtTelnet::start()
 
 {
 //    d=new QtTelnetPrivate(this);
@@ -1388,7 +1398,10 @@ void QtTelnet::run(void)
 //            qDebug()<<"errTaskTimeout close();";
             currentState.errState.append(errTaskTimeout);
             currentState.infState.append(infLogOff);
-            taskTimer.start();
+            qDebug()<<"taskTimer.start();";
+            //taskTimer.start();
+            emit taskStarted();
+            //QTimer::singleShot(0,&taskTimer,[this](){taskTimer.start();});
             close();
         }
         else {
@@ -1706,6 +1719,7 @@ void QtTelnet::goNextStep(DlgState state, int key, QStringList capTexts)
                     currentState.dlgTracking.contains(dlgLoggedIn)) {
                 qDebug()<<"trmTelnetConnecting dlgConnectionBroken Server broke connection!";
                 currentState.errState.append(errServerBrokeTheConnection);
+                emit serverBrokeTheConnection();
 
             }
             currentState.trmState=trmTelnetDisconnected;
@@ -1737,7 +1751,10 @@ void QtTelnet::goNextStep(DlgState state, int key, QStringList capTexts)
                 currentState.infState.removeAll(infLogOff);
 //                if (d->connected)
 //                    qDebug()<<"dlgSoketDisconnected when d->connected==true";
-                delayTaskTimer.start(3000);
+                qDebug()<<"delayTaskTimer.start(3000);";
+                emit taskRestarted(3000);
+                //delayTaskTimer.start(3000);
+                //QTimer::singleShot(0,&delayTaskTimer,[this](){delayTaskTimer.start(3000);});
             }
 //            else if (!currentState.infState.contains(infTaskFinished)) {
 //                currentState.infState.append(infTaskFinished);
@@ -1844,9 +1861,12 @@ void QtTelnet::taskStart()
     currentState.errState.clear();
     currentState.infState.clear();
     currentState.lastMessage.clear();
-    taskTimer.stop();
-    taskTimer.start();
-//    qDebug()<<"QtTelnet::taskStart taskTimer.start();";
+    qDebug()<<"taskTimer.stop(); taskTimer.start();";
+    emit taskStarted();
+    //taskTimer.stop();
+    //taskTimer.start();
+//    QTimer::singleShot(0,&taskTimer,[this](){taskTimer.stop();});
+//    QTimer::singleShot(0,&taskTimer,[this](){taskTimer.start();});
 }
 
 
@@ -1859,11 +1879,11 @@ void QtTelnet::kanbanDeclare(int logKanbanId, const QByteArray &kanbanNumber, QB
 //        user=defaultSapUser;
 //        pass=defaultSapPass;
 //    }
-    if (logKanbanId==0) {
-        currentState.errState.append(errKanbanNotDefined);
-        kanbanFinish(currentState.errState.last(), kanbanNumber);
-        return;
-    }
+//    if (logKanbanId==0) {
+//        currentState.errState.append(errKanbanNotDefined);
+//        kanbanFinish(currentState.errState.last(), kanbanNumber);
+//        return;
+//    }
     taskQueue.enqueue({logKanbanId, kanbanNumber, user, pass, idDevice});
 //    currentState.activeTask.kanbanNumber=kanbanNumber;
 //    currentState.activeTask.user=user;

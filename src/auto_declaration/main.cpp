@@ -5,10 +5,30 @@
 #include "single_apprun.h"
 //#include "watchdog.h"
 #include <QApplication>
+#include <QProcess>
+#include <QNetworkProxy>
+#include <QThread>
+#include <QTimer>
+
+QString shieldPath(const QString &anyPath)
+{
+    QString resPath(anyPath);
+            QRegExp rx("/((\\w+\\s+)+\\w+)/");
+            if(rx.indexIn(anyPath)!=-1){
+                QStringList list = rx.capturedTexts();
+                list.removeDuplicates();
+                for(QString &s:list){
+                    if(!s.endsWith(" ") && !s.endsWith("/")){
+                        resPath.replace(s,QString("\"%1\"").arg(s));
+                    }
+                }
+            }
+            return resPath;
+}
 
 void StartApp()
 {
-    qDebug()<<"RunPLC_connection start";
+    qDebug()<<"StartApp start";
 
     //########### Step 1.0 ############
     QtTelnet *telnetClient = new QtTelnet;
@@ -29,6 +49,13 @@ void StartApp()
         else
             qDebug() << "kanban error" << error <<message;
     });
+    QObject::connect(telnetClient, &QtTelnet::serverBrokeTheConnection,[] (){
+        QString appPath(shieldPath(qApp->applicationDirPath()));
+        QString cmdCommand("cmd.exe /C start %1 %2.exe %3");
+        cmdCommand = cmdCommand.arg(appPath).arg(qApp->applicationName()).arg(APP_OPTION_FORCE);
+        QProcess *restartApp = new QProcess;
+        restartApp->startDetached(cmdCommand);
+    });
 
     //########### Step 3 PLC_PARTNER connect ############
     //192.168.0.11
@@ -36,25 +63,34 @@ void StartApp()
     //"users":["RUTYABC018", "initial","RUTYABC019", "initial"]}
     QByteArray LocalAddress("192.168.0.10");
     QByteArray RemoteAddress("192.168.0.11");
-    int LocTsap=1002;
-    int RemTsap=2002;
+    bool ok;
+    int LocTsap=QString("1002").toInt(&ok,16);
+    int RemTsap=QString("2002").toInt(&ok,16);
     Plc_station * plcPartner = new Plc_station;
-    qDebug() << "PLC_PARTNER connect from "<<LocalAddress  << "to" << RemoteAddress;
+//    QObject::connect(plcPartner, &Plc_station::reqDeclKanban,
+//                     [telnetClient](const QByteArray &kanbanNumber, const QByteArray &user, const QByteArray &pass, int idDevice){
+//            QTimer::singleShot(0,telnetClient,[telnetClient,kanbanNumber,user,pass,idDevice](){
+//                telnetClient->kanbanDeclare(1, kanbanNumber,user,pass,idDevice);
+//            });
+//    });
+    QObject::connect(plcPartner, &Plc_station::reqDeclKanban, telnetClient, &QtTelnet::kanbanDeclare,Qt::QueuedConnection);
+    QObject::connect(telnetClient, &QtTelnet::kanbanFinished, plcPartner, &Plc_station::resDeclKanban);
     plcPartner->setObjectName("DP_4B45X");
     plcPartner->setIdDevice(13);
     plcPartner->setUsers(QVariantList()<<"RUTYABC018"<<"initial"<<"RUTYABC019"<<"initial");
-        plcPartner->StartTo(LocalAddress,RemoteAddress,(word)LocTsap,(word)RemTsap);
-        QObject::connect(plcPartner, &Plc_station::reqDeclKanban,
-                         [telnetClient](const QByteArray &kanbanNumber, const QByteArray &user, const QByteArray &pass, int idDevice){
-            telnetClient->kanbanDeclare(0, kanbanNumber,user,pass,idDevice);
-        });
-    QObject::connect(telnetClient, &QtTelnet::kanbanFinished, plcPartner, &Plc_station::resDeclKanban);
+    plcPartner->StartTo(LocalAddress,RemoteAddress,(word)LocTsap,(word)RemTsap);
     QStringList plcStatusList;
     plcStatusList<<"stopped"<<"running and active connecting"<<"running and waiting for a connection"
                  <<"running and connected : linked"<<"sending data"<<"receiving data"
                  <<"error starting passive server";
-    qDebug() << "plcPartner status:"<<plcStatusList.at(plcPartner->getStatus());
-qDebug()<<"RunPLC_connection finished";
+    qDebug()<<"plcPartner status:"<<plcPartner->getStatus()<<plcStatusList.at(plcPartner->getStatus());
+    qDebug()<<"StartApp finished";
+
+
+    //test
+    //13:07:46.316 StartApp 48 kanban error 7 "errNoKanban infTaskFinished Kanban 1598000000 not maintained in ZJK00 table"
+    //telnetClient->kanbanDeclare(1,"1598000000", "RUTYABC018", "initial", 11);
+
 }
 
 int main(int argc, char *argv[])
@@ -84,6 +120,7 @@ int main(int argc, char *argv[])
         a.quit();
         return 0;
     }
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
     StartApp();
 //    /*****************************************
 //     * Start Watchdog

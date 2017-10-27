@@ -75,7 +75,7 @@ class QtTelnetPrivate;
 #  define QT_QTTELNET_EXPORT
 #endif
 
-class QT_QTTELNET_EXPORT QtTelnet : public QThread
+class QT_QTTELNET_EXPORT QtTelnet : public QObject/*QThread*/
 {
     Q_OBJECT
     friend class QtTelnetPrivate;
@@ -133,6 +133,7 @@ public:
         QString                 lastMessage;
     };
 
+    void start();
     void connectToHost(const QString &host="", quint16 port = 23);
 
     void setWindowSize(const QSize &size);
@@ -175,6 +176,7 @@ public slots:
     void setTaskTimeout(int timeout);
 
 signals:
+    void serverBrokeTheConnection();
     void sendString(const QString &str);
     void connected();
     void disconnected();
@@ -186,7 +188,8 @@ signals:
     void message(const QByteArray &data);
     void stateChanged(DlgState state, int key=0, QStringList capTexts=QStringList());
     void kanbanFinished(int logKanbanId, const QByteArray &kanban, int error, int idDevice, const QString &message="");
-
+    void taskStarted();
+    void taskRestarted(int delay);
 
 private slots:
     bool parseMessage(const QByteArray &data);
@@ -223,8 +226,8 @@ private:
 
 
 
-protected:
-    virtual void run(void);
+//protected:
+//    virtual void run(void);
 
 };
 #endif
