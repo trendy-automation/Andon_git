@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <QProcess>
 #include <QNetworkProxy>
-#include <QThread>
+//#include <QThread>
 #include <QTimer>
 
 QString shieldPath(const QString &anyPath)
@@ -42,14 +42,22 @@ void StartApp()
     telnetClient->setTelnetUser("SAPcoRPC");
     telnetClient->setTelnetPass("Faurecia01*");
     telnetClient->start();
+    QTimer* keepConnectionTimer = new QTimer;
+    QObject::connect(keepConnectionTimer, &QTimer::timeout,[=](){
+        //nonexist kanban
+        //13:07:46.316 StartApp 48 kanban error 7 "errNoKanban infTaskFinished Kanban 1598000000 not maintained in ZJK00 table"
+        telnetClient->kanbanDeclare(1,"1598000000", "RUTYABC018", "initial", 11);
+    });
     QObject::connect(telnetClient, &QtTelnet::kanbanFinished,
                      [=] (int logKanbanId,const QByteArray &kanbanNumber, int error, int idDevice, const QString &message){
+        keepConnectionTimer->start(3000000);
         if(error==0)
             qDebug() << "KANBAN DECLARED" << kanbanNumber << "->" << message;
         else
             qDebug() << "kanban error" << error <<message;
     });
     QObject::connect(telnetClient, &QtTelnet::serverBrokeTheConnection,[] (){
+        qDebug() << "serverBrokeTheConnection lambda";
         QString appPath(shieldPath(qApp->applicationDirPath()));
         QString cmdCommand("cmd.exe /C start %1 %2.exe %3");
         cmdCommand = cmdCommand.arg(appPath).arg(qApp->applicationName()).arg(APP_OPTION_FORCE);
@@ -87,9 +95,6 @@ void StartApp()
     qDebug()<<"StartApp finished";
 
 
-    //test
-    //13:07:46.316 StartApp 48 kanban error 7 "errNoKanban infTaskFinished Kanban 1598000000 not maintained in ZJK00 table"
-    //telnetClient->kanbanDeclare(1,"1598000000", "RUTYABC018", "initial", 11);
 
 }
 

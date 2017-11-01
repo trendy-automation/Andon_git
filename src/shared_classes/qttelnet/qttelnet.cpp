@@ -1720,7 +1720,6 @@ void QtTelnet::goNextStep(DlgState state, int key, QStringList capTexts)
                 qDebug()<<"trmTelnetConnecting dlgConnectionBroken Server broke connection!";
                 currentState.errState.append(errServerBrokeTheConnection);
                 emit serverBrokeTheConnection();
-
             }
             currentState.trmState=trmTelnetDisconnected;
             break;
