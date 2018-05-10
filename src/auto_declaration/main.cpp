@@ -1,5 +1,4 @@
-
-#include "Plc_station.h"
+#include "plc_station.h"
 #include "message_handler.h"
 #include "qttelnet.h"
 #include "single_apprun.h"
@@ -7,7 +6,7 @@
 #include <QApplication>
 #include <QProcess>
 #include <QNetworkProxy>
-//#include <QThread>
+#include <QSettings>
 #include <QTimer>
 
 QString shieldPath(const QString &anyPath)
@@ -29,6 +28,10 @@ QString shieldPath(const QString &anyPath)
 void StartApp()
 {
     qDebug()<<"StartApp start";
+
+    QString FileName("settings.ini");
+    QSettings settings(FileName, QSettings::IniFormat);
+
 
     //########### Step 1.0 ############
     QtTelnet *telnetClient = new QtTelnet;
@@ -69,11 +72,23 @@ void StartApp()
     //192.168.0.11
     //{"LocalAddress":"192.168.0.10", "LocTsap":"1002", "RemTsap":"2002",
     //"users":["RUTYABC018", "initial","RUTYABC019", "initial"]}
-    QByteArray LocalAddress("192.168.0.10");
-    QByteArray RemoteAddress("192.168.0.11");
+//    QByteArray LocalAddress("192.168.0.10");
+//    QByteArray RemoteAddress("192.168.0.11");
     bool ok;
-    int LocTsap=QString("1002").toInt(&ok,16);
-    int RemTsap=QString("2002").toInt(&ok,16);
+//    int LocTsap=QString("1002").toInt(&ok,16);
+//    int RemTsap=QString("2002").toInt(&ok,16);
+
+    QByteArray LocalAddress  = settings.value("LocalAddress","192.168.0.10").toByteArray();
+    QByteArray RemoteAddress = settings.value("RemoteAddress","192.168.0.11").toByteArray();
+    int LocTsap = settings.value("LocTsap",QString("1002").toInt(&ok,16)).toInt();
+    int RemTsap = settings.value("RemTsap",QString("2002").toInt(&ok,16)).toInt();
+
+    settings.setValue("LocalAddress", LocalAddress);
+    settings.setValue("LocTsap", LocTsap);
+    settings.setValue("RemoteAddress", RemoteAddress);
+    settings.setValue("RemTsap", RemTsap);
+
+
     Plc_station * plcPartner = new Plc_station;
 //    QObject::connect(plcPartner, &Plc_station::reqDeclKanban,
 //                     [telnetClient](const QByteArray &kanbanNumber, const QByteArray &user, const QByteArray &pass, int idDevice){
@@ -83,6 +98,7 @@ void StartApp()
 //    });
     QObject::connect(plcPartner, &Plc_station::reqDeclKanban, telnetClient, &QtTelnet::kanbanDeclare,Qt::QueuedConnection);
     QObject::connect(telnetClient, &QtTelnet::kanbanFinished, plcPartner, &Plc_station::resDeclKanban);
+    QObject::connect(telnetClient, &QtTelnet::serverBrokeTheConnection, plcPartner, &Plc_station::kanbanDeclError);
     plcPartner->setObjectName("DP_4B45X");
     plcPartner->setIdDevice(13);
     plcPartner->setUsers(QVariantList()<<"RUTYABC018"<<"initial"<<"RUTYABC019"<<"initial");
@@ -93,6 +109,7 @@ void StartApp()
                  <<"error starting passive server";
     qDebug()<<"plcPartner status:"<<plcPartner->getStatus()<<plcStatusList.at(plcPartner->getStatus());
     qDebug()<<"StartApp finished";
+
 
 
 

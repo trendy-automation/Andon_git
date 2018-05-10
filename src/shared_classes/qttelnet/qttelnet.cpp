@@ -1719,7 +1719,7 @@ void QtTelnet::goNextStep(DlgState state, int key, QStringList capTexts)
                     currentState.dlgTracking.contains(dlgLoggedIn)) {
                 qDebug()<<"trmTelnetConnecting dlgConnectionBroken Server broke connection!";
                 currentState.errState.append(errServerBrokeTheConnection);
-                emit serverBrokeTheConnection();
+                emit serverBrokeTheConnection(currentState.activeTask.kanbanNumber);
             }
             currentState.trmState=trmTelnetDisconnected;
             break;

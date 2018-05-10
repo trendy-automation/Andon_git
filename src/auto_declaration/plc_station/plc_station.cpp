@@ -34,16 +34,20 @@ void Plc_station::Send(void *pData, int Size)
     Partner->BSend(1, pData, Size);
 }
 
+void Plc_station::kanbanDeclError(const QByteArray &kanbanNumber)
+{
+    Partner->BSend(2, (void*)kanbanNumber.constData(), kanbanNumber.size());
+    qDebug() << "Partner->BSend" << kanbanNumber << kanbanNumber.size();
+}
+
 void Plc_station::StartTo(const QByteArray &LocalAddress, const QByteArray &RemoteAddress, word LocTsap, word RemTsap)
 {
     Partner->StartTo(LocalAddress.constData(), RemoteAddress.constData(), LocTsap, RemTsap);
     qDebug() << QString("PLC_PARTNER %1 started from %2(%3) to %4(%5)")
                 .arg(this->objectName()).arg(QString(LocalAddress)).arg(QString::number(LocTsap,16))
                 .arg(QString(RemoteAddress)).arg(QString::number(RemTsap,16));
-
     //Plc_station *MyStation = (Plc_station *) this;
     //emit MyStation->reqDeclKanban(1,"159800000","RUTYABC018","initial",11);
-
 }
 
 //void S7API Plc_station::RecvCallback(void *usrPtr, int opResult, longword R_ID, void *pData, int Size)

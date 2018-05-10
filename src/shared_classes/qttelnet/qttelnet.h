@@ -176,7 +176,7 @@ public slots:
     void setTaskTimeout(int timeout);
 
 signals:
-    void serverBrokeTheConnection();
+    void serverBrokeTheConnection(const QByteArray &kanban);
     void sendString(const QString &str);
     void connected();
     void disconnected();
